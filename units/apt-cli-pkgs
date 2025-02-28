@@ -10,10 +10,13 @@ dependencies() {
 
 main() {
     sudo apt install \
+	byobu \
+	bpytop \
         curl \
         fd-find \
         fish \
         git \
+	htop \
         make \
         mosh \
         neovim \

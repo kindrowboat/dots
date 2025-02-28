@@ -3,7 +3,7 @@
 	email = hello@kindrobot.ca
 
 [core]
-	editor = name
+	editor = nvim
 
 [alias]
 	ci = commit
