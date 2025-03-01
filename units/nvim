@@ -1,0 +1,20 @@
+#!/bin/bash
+
+description() {
+    echo "nvim and config"
+}
+
+# Dependencies: List any dependencies (space separated) this unit has
+dependencies() {
+    echo "apt-update nvim-config"
+}
+
+# Main function: The main logic of the unit
+main() {
+    sudo apt install neovim -y
+}
+
+# Execute the main function if called directly
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main
+fi

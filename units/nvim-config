@@ -1,0 +1,21 @@
+#!/bin/bash
+
+description() {
+    echo "nvim and config"
+}
+
+# Dependencies: List any dependencies (space separated) this unit has
+dependencies() {
+    echo ""
+}
+
+# Main function: The main logic of the unit
+main() {
+    DOTS_ROOT=$(git rev-parse --show-toplevel)
+    ln -fs "$DOTS_ROOT/configs/nvim" /home/$USER/.config/nvim 
+}
+
+# Execute the main function if called directly
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main
+fi
