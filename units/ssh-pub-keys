@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+description() {
+    echo "Install SSH public keys from KeePass"
+}
+
+dependencies() {
+    echo "keepassxc"
+}
+
+main() {
+    set -e
+    DATABASE="$HOME/Nextcloud/kp/StefPass.kdbx"
+    TEMP_KEY_FILE=$(mktemp)
+
+    mkdir -p $HOME/.ssh
+
+    remove_keyfile() {
+        rm -f "$TEMP_KEY_FILE"
+    }
+    trap remove_keyfile EXIT
+
+    kp_export_pubkey() {
+        local entry_name="$1"
+
+        local pub_key_filename="${entry_name}.pub"
+        local pub_key_path="$HOME/.ssh/${pub_key_filename}"
+
+        keepassxc-cli attachment-export --key-file "$TEMP_KEY_FILE" --no-password "$DATABASE" "keys/$entry_name" "$pub_key_filename" "${pub_key_path}"
+    }
+
+    # Prompt the user for the KeePass master password
+    read -sp "Enter KeePass master password: " KEEPASS_PASSWORD
+    echo
+    printf "%s" "$KEEPASS_PASSWORD" > "$TEMP_KEY_FILE"
+
+    ENTRIES=$(keepassxc-cli ls --key-file "$TEMP_KEY_FILE" --no-password "$DATABASE" keys)
+
+    for ENTRY in $ENTRIES; do
+        kp_export_pubkey "$ENTRY"
+    done
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main
+fi

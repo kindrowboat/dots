@@ -1,0 +1,32 @@
+- name: test
+  units: 
+  - apt-update
+- name: debian
+  units:
+  - alacritty
+  - apt-cli-pkgs
+  - apt-gui-pkgs
+  - apt-stable
+  - apt-update
+  - deb-bin
+  - docker
+  - fdfind
+  - fish
+  - fonts
+  - git-config
+  - golang
+  - home-bin
+  - input-devices
+  - kde-activities
+  - keepassxc
+  - kube-utils
+  - minikube
+  - nvim
+  - nvim-config
+  - profile-home
+  - skaffold
+  - ssh-agent
+  - ssh-config
+  - ssh-keys
+  - wget-curl
+  - yadu

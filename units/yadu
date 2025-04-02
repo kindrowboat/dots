@@ -11,10 +11,12 @@ dependencies() {
 
 # Main function: The main logic of the unit
 main() {
+    set -e
+    version="v1.1.0"
     cd $(mktemp -d)
-    wget https://github.com/kindrowboat/yadu/releases/download/v1.0.3/yadu-linux-amd64
+    wget "https://github.com/kindrowboat/yadu/releases/download/${version}/yadu-linux-amd64"
     sudo install yadu-linux-amd64 /usr/local/bin/yadu
-    yadu completion bash | sudo tee /etc/bash_completion.d/yadu
+    yadu completion bash | sudo tee /etc/bash_completion.d/yadu > /dev/null
 }
 
 # Execute the main function if called directly

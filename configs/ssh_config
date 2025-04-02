@@ -32,20 +32,20 @@ Host gerrit.wikimedia.org
 # WMF CloudVPS access (including toolforge)
 Host *.wmflabs.org *.wmcloud.org *.toolforge.org
     User kindrobot
-    IdentityFile ~/.ssh/wmf_cloudvps_ed25519.key
+    IdentityFile ~/.ssh/wmf_cloudvps_ed25519.key.pub
 
 Host *.wmflabs *.wikimedia.cloud
     User kindrobot
     ProxyJump bastion.wmcloud.org:22
-    IdentityFile ~/.ssh/wmf_cloudvps_ed25519.key
+    IdentityFile ~/.ssh/wmf_cloudvps_ed25519.key.pub
 
 Host gitlab.wikimedia.org
-    IdentityFile ~/.ssh/wmf_gitlab_ed25519.key
+    IdentityFile ~/.ssh/wmf_gitlab_ed25519.key.pub
 
 Host tilde.town
     Hostname tilde.town
     User kindrobot
-    IdentityFile ~/.ssh/town_ed25519.key
+    IdentityFile ~/.ssh/town_ed25519.key.pub
     ForwardAgent yes
     AddressFamily inet
 
@@ -55,9 +55,10 @@ Host team
     ForwardAgent yes
 
 Host github.com
-    IdentityFile ~/.ssh/github_ed25519.key
+    IdentityFile ~/.ssh/github_ed25519.key.pub
 
-Host home
-    Hostname kindrobot.ca
-Port 4222
+Host lesbians.kindrobot.ca
+    Hostname lesbians.kindrobot.ca
+    User kindrobot
     ForwardAgent yes
+    IdentityFile ~/.ssh/lesbians_ed25519.key.pub

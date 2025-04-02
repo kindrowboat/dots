@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+description() {
+    echo "add apt sources for testing, unstable, and experimental, but default to stable"
+}
+
+dependencies() {
+    echo ""
+}
+
+main() {
+    set -eu
+
+    DOTS_ROOT=$(git rev-parse --show-toplevel)
+    if [[ -f /etc/apt/sources.list ]]; then
+        sudo mv /etc/apt/sources.list /etc/apt/sources.list.orig
+    fi
+    sudo cp $DOTS_ROOT/configs/apt/stable/sources/stable.list /etc/apt/sources.list.d/stable.list
+    sudo cp $DOTS_ROOT/configs/apt/stable/sources/testing.list /etc/apt/sources.list.d/testing.list
+    sudo cp $DOTS_ROOT/configs/apt/stable/sources/unstable.list /etc/apt/sources.list.d/unstable.list
+    sudo cp $DOTS_ROOT/configs/apt/stable/sources/experimental.list /etc/apt/sources.list.d/experimental.list
+    sudo cp $DOTS_ROOT/configs/apt/stable/pref/stable.pref /etc/apt/preferences.d/stable.pref
+    sudo cp $DOTS_ROOT/configs/apt/stable/pref/testing.pref /etc/apt/preferences.d/testing.pref
+    sudo cp $DOTS_ROOT/configs/apt/stable/pref/unstable.pref /etc/apt/preferences.d/unstable.pref
+    sudo cp $DOTS_ROOT/configs/apt/stable/pref/experimental.pref /etc/apt/preferences.d/experimental.pref
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main
+fi
