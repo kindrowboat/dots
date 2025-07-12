@@ -45,6 +45,7 @@ Host gitlab.wikimedia.org
 Host tilde.town
     Hostname tilde.town
     User kindrobot
+    #IdentityFile ~/.ssh/id_ed25519
     IdentityFile ~/.ssh/town_ed25519.key.pub
     ForwardAgent yes
     AddressFamily inet
@@ -53,6 +54,7 @@ Host team
     Hostname tilde.team
     User kindrobot
     ForwardAgent yes
+    IdentityFile ~/.ssh/id_ed25519
 
 Host github.com
     IdentityFile ~/.ssh/github_ed25519.key.pub
@@ -62,3 +64,12 @@ Host lesbians.kindrobot.ca
     User kindrobot
     ForwardAgent yes
     IdentityFile ~/.ssh/lesbians_ed25519.key.pub
+
+Host acai
+    Hostname 23.23.30.15
+    User kindrobot
+    ForwardAgent yes
+    Port 46822
+    IdentityFile ~/.ssh/acai_ed25519.key.pub
+
+
