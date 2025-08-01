@@ -5,12 +5,13 @@ description() {
 }
 
 dependencies() {
-    echo "profile-home"
+    echo ""
 }
 
 main() {
     set -eux
     DOTS_ROOT=$(git rev-parse --show-toplevel)
+    # TODO: switch this to ~/.config/environment.d
     cp -f $DOTS_ROOT/configs/home-profile.d/ssh-agent $HOME/.profile.d/ssh-agent
     mkdir -p $HOME/.config/systemd/user
     cp -f $DOTS_ROOT/configs/user-units/ssh-agent.service $HOME/.config/systemd/user/ssh-agent.service

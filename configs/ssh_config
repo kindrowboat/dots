@@ -28,6 +28,8 @@ Host *.wmnet *.wikimedia.org !gerrit.wikimedia.org !bast*.wikimedia.org !gitlab.
 # wikimedia's gerrit
 Host gerrit.wikimedia.org
     Port 29418
+    IdentityFile ~/.ssh/wmf_gerrit_ed25519.key.pub
+    RequiredRSASize 1024
 
 # WMF CloudVPS access (including toolforge)
 Host *.wmflabs.org *.wmcloud.org *.toolforge.org

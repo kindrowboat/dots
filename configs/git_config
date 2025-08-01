@@ -13,3 +13,10 @@
 
 [push]
 	autoSetupRemote = true
+
+[gitreview]
+	remote = origin
+	username = Gerrituser
+
+[url "ssh://kindrobot@gerrit.wikimedia.org:29418/"]
+	insteadOf = https://gerrit.wikimedia.org/r/
