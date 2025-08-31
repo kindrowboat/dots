@@ -1,26 +1,17 @@
 #!/usr/bin/env bash
 
 description() {
-    echo "Install fish shell"
+    echo "configure fish shell"
 }
 
 dependencies() {
-    echo "apt-update"
+    echo ""
 }
 
 main() {
-    DOTS_ROOT=$(git rev-parse --show-toplevel)
-    sudo apt install fish -y
-
-    if [ $SHELL != "/usr/bin/fish" ]; then
-        echo "Changing shell to fish"
-        chsh -s /usr/bin/fish
-    fi
-
     fish -c 'curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher'
     fish -c 'fisher install jethrokuan/z'
     fish -c 'fisher install edc/bass'
-    cp -f $DOTS_ROOT/configs/fish/source-profile.fish $HOME/.config/fish/conf.d/source-profile.fish
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

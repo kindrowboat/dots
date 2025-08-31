@@ -46,7 +46,7 @@ Host gitlab.wikimedia.org
 
 Host tilde.town
     Hostname tilde.town
-    User kindrobot
+    User kind
     #IdentityFile ~/.ssh/id_ed25519
     IdentityFile ~/.ssh/town_ed25519.key.pub
     ForwardAgent yes
@@ -73,5 +73,26 @@ Host acai
     ForwardAgent yes
     Port 46822
     IdentityFile ~/.ssh/acai_ed25519.key.pub
+
+
+Host skylab.org
+    IdentityFile ~/.ssh/skylab_ed25519.key.pub
+    User kind
+
+Host sdf.org
+    User kind
+    #PreferredAuthentications password
+    #PubkeyAuthentication no
+    IdentityFile ~/.ssh/sdf_ed25519.key.pub
+
+Host coop.coloc.systems
+    User coop
+    IdentityFile ~/.ssh/coop_coloc_ed25519.key.pub
+
+
+Host kindbsd.coloc.systems
+        User kind
+        IdentityFile /home/kindrobot/.ssh/kindbsd_ed25519.key.pub
+        IdentitiesOnly yes
 
 

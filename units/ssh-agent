@@ -11,10 +11,10 @@ dependencies() {
 main() {
     set -eux
     DOTS_ROOT=$(git rev-parse --show-toplevel)
-    # TODO: switch this to ~/.config/environment.d
-    cp -f $DOTS_ROOT/configs/home-profile.d/ssh-agent $HOME/.profile.d/ssh-agent
+    mkdir -p $HOME/.config/environment.d
+    ln -f $DOTS_ROOT/configs/environment.d/ssh-agent.conf $HOME/.config/environment.d/ssh-agent.conf
     mkdir -p $HOME/.config/systemd/user
-    cp -f $DOTS_ROOT/configs/user-units/ssh-agent.service $HOME/.config/systemd/user/ssh-agent.service
+    ln -f $DOTS_ROOT/configs/user-units/ssh-agent.service $HOME/.config/systemd/user/ssh-agent.service
     systemctl --user enable ssh-agent
     systemctl --user start ssh-agent
 }
