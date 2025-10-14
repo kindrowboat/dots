@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+# new-key - create an ed25519 keypair, store passphrase & key files in KeePass DB,
+# add key to ssh-agent, and write an ssh config Host entry.
+# Requirements:
+#  - ssh-keygen, keepassxc-cli
+# Usage: new-key USER HOST LABEL
+
+set -euo pipefail
+
+if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 USER HOST LABEL"
+    exit 2
+fi
+
+USER_ARG="$1"
+HOST_ARG="$2"
+LABEL="$3"
+
+DB_PATH="${HOME}/Nextcloud/kp/StefPass.kdbx"
+ENTRY_TITLE="${LABEL}_ed25519.key"
+ENTRY_PATH="keys/${ENTRY_TITLE}"
+SSH_DIR="${HOME}/.ssh"
+KEY_NAME="${LABEL}_ed25519.key"
+KEY_PATH="${SSH_DIR}/${KEY_NAME}"
+PUB_KEY_PATH="${KEY_PATH}.pub"
+SSH_CONFIG="${HOME}/.ssh/config"
+
+# helper to attach a file to the KeePass entry
+kp_attach_file() {
+    local file="$1"
+    local quiet="${2:-1}"  # 1 = suppress output
+    if [ ! -f "${file}" ]; then
+        echo "Warning: file not found for attachment: ${file}" >&2
+        return 0
+    fi
+    local attach_name
+    attach_name="$(basename -- "${file}")"
+    local cmd=(
+        keepassxc-cli attachment-import
+        --key-file "${TEMP_KEY_FILE}"
+        --no-password
+        "${DB_PATH}"
+        "${ENTRY_PATH}"
+        "${attach_name}"
+        "${file}"
+    )
+    if [ "${quiet}" -eq 1 ]; then
+        if ! "${cmd[@]}" >/dev/null 2>&1; then
+            echo "Warning: failed to attach ${attach_name} to KeePass entry." >&2
+        fi
+    else
+        if ! "${cmd[@]}"; then
+            echo "Warning: failed to attach ${attach_name} to KeePass entry." >&2
+        fi
+    fi
+}
+
+# make sure keys don't already exist
+if [ -f "${KEY_PATH}" ] || [ -f "${PUB_KEY_PATH}" ]; then
+    echo "Error: key files ${KEY_PATH} or ${PUB_KEY_PATH} already exist. Aborting."
+    exit 1
+fi
+
+# prompt for KeePass DB password
+printf "KeePass DB password: "
+stty -echo
+read -r KP_DB_PASS
+stty echo
+printf "\n"
+
+# write DB key file to a secure temp file and ensure it's removed
+TEMP_KEY_FILE="$(mktemp --suffix=.key 2>/dev/null || mktemp 2>/dev/null || echo "/tmp/keepasskey.$$")"
+chmod 600 "${TEMP_KEY_FILE}"
+printf "%s" "${KP_DB_PASS}" > "${TEMP_KEY_FILE}"
+# try to overwrite & remove on exit
+cleanup_keyfile() {
+    if command -v shred >/dev/null 2>&1; then
+        shred -u "${TEMP_KEY_FILE}" >/dev/null 2>&1 || rm -f "${TEMP_KEY_FILE}" >/dev/null 2>&1
+    else
+        # best-effort zeroing
+        printf '\0%.0s' $(seq 1 $(wc -c < "${TEMP_KEY_FILE}")) > "${TEMP_KEY_FILE}" 2>/dev/null || true
+        rm -f "${TEMP_KEY_FILE}" >/dev/null 2>&1 || true
+    fi
+}
+trap cleanup_keyfile EXIT
+
+# verify KeePass DB password before proceeding
+if [ ! -f "${DB_PATH}" ]; then
+    echo "Error: KeePass DB not found at ${DB_PATH}" >&2
+    exit 2
+fi
+
+if ! command -v keepassxc-cli >/dev/null 2>&1; then
+    echo "Error: keepassxc-cli not installed" >&2
+    exit 2
+fi
+
+if ! keepassxc-cli ls --key-file "${TEMP_KEY_FILE}" --no-password "${DB_PATH}" >/dev/null 2>&1; then
+    echo "Error: KeePass DB password appears to be incorrect or cannot be validated non-interactively." >&2
+    exit 2
+fi
+
+# Use keepassxc-cli to add entry and attach key files (store DB key file in a secure temp file)
+# create the entry (non-interactive) using the provided key file
+if ! keepassxc-cli add --key-file "${TEMP_KEY_FILE}" --no-password -u "${USER_ARG}" -g --url "${HOST_ARG}" "${DB_PATH}" "${ENTRY_PATH}" >/dev/null 2>&1; then
+    echo "Error: failed to create KeePass entry with keepassxc-cli." >&2
+    exit 1
+fi
+
+# get generated password from created entry (fail if not obtained)
+
+set -x
+KEY_PASSPHRASE="$(keepassxc-cli show --key-file "${TEMP_KEY_FILE}" --no-password --show-protected "${DB_PATH}" "${ENTRY_PATH}" \
+    | awk -F': *' '/^Password:/ {print $2; exit}')"
+if [ -z "${KEY_PASSPHRASE:-}" ]; then
+    echo "Error: failed to extract generated password from KeePass entry." >&2
+    exit 1
+fi
+
+# ensure ssh dir
+mkdir -p "${SSH_DIR}"
+chmod 700 "${SSH_DIR}"
+
+ssh-keygen -t ed25519 -C "${USER_ARG}@${HOST_ARG}" -f "${KEY_PATH}" -N "${KEY_PASSPHRASE}" >/dev/null
+
+chmod 600 "${KEY_PATH}"
+chmod 644 "${PUB_KEY_PATH}"
+
+# attach generated keys
+kp_attach_file "${KEY_PATH}" 1
+kp_attach_file "${PUB_KEY_PATH}"
+
+# create a temp dir and prepare KeeAgent.settings (must be UTF-16 with BOM)
+TMPDIR="$(mktemp -d 2>/dev/null || mktemp -d -t keeagent)"
+SETTINGS_FILE="${TMPDIR}/KeeAgent.settings"
+SETTINGS_SRC="${TMPDIR}/KeeAgent.xml"
+
+cat > "${SETTINGS_SRC}" <<EOF
+<?xml version="1.0" encoding="UTF-16"?>
+<EntrySettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <AllowUseOfSshKey>true</AllowUseOfSshKey>
+    <AddAtDatabaseOpen>true</AddAtDatabaseOpen>
+    <RemoveAtDatabaseClose>true</RemoveAtDatabaseClose>
+    <UseConfirmConstraintWhenAdding>false</UseConfirmConstraintWhenAdding>
+    <UseLifetimeConstraintWhenAdding>false</UseLifetimeConstraintWhenAdding>
+    <LifetimeConstraintDuration>600</LifetimeConstraintDuration>
+    <Location>
+        <SelectedType>attachment</SelectedType>
+        <AttachmentName>${LABEL}_ed25519.key</AttachmentName>
+        <SaveAttachmentToTempFile>false</SaveAttachmentToTempFile>
+        <FileName/>
+    </Location>
+</EntrySettings>
+EOF
+
+# convert to UTF-16LE and add BOM (try iconv, fallback to python3)
+if command -v iconv >/dev/null 2>&1; then
+        iconv -f utf-8 -t utf-16le "${SETTINGS_SRC}" > "${SETTINGS_FILE}.utf16" || true
+        : > "${SETTINGS_FILE}"
+        printf '\xFF\xFE' >> "${SETTINGS_FILE}"   # BOM for UTF-16LE
+        cat "${SETTINGS_FILE}.utf16" >> "${SETTINGS_FILE}"
+        rm -f "${SETTINGS_FILE}.utf16"
+else
+        if command -v python3 >/dev/null 2>&1; then
+                python3 - <<PY > "${SETTINGS_FILE}"
+content = """$(sed 's/\\/\\\\/g; s/"/\\"/g' "${SETTINGS_SRC}")"""
+with open("${SETTINGS_FILE}", "w", encoding="utf-16") as f:
+        f.write(content)
+PY
+        else
+                # fallback: write as UTF-8 (may not be recognized by KeeAgent)
+                echo "Warning: neither iconv nor python3 found; writing KeeAgent.settings as UTF-8 which may not be recognized correctly." >&2
+                cp "${SETTINGS_SRC}" "${SETTINGS_FILE}"
+        fi
+fi
+
+chmod 600 "${SETTINGS_FILE}"
+
+# ensure tmpdir cleanup along with existing keyfile cleanup
+trap 'cleanup_keyfile; rm -rf "'"${TMPDIR}"'" >/dev/null 2>&1 || true' EXIT
+
+# attach KeeAgent.settings
+kp_attach_file ${SETTINGS_FILE}
+
+# write (or append) ssh config entry
+# ensure config file exists and has proper permissions
+touch "${SSH_CONFIG}"
+chmod 600 "${SSH_CONFIG}"
+
+cat >> "${SSH_CONFIG}" <<EOF
+
+Host ${HOST_ARG}
+    User ${USER_ARG}
+    IdentityFile ~/.ssh/${KEY_NAME}.pub
+    IdentitiesOnly yes
+EOF
+
+echo "Done: keypair created at ${KEY_PATH} and ${PUB_KEY_PATH}"
+echo "KeePass entry: ${ENTRY_TITLE} in group ${DB_GROUP_CHAIN[*]}"
+echo "SSH config appended to ${SSH_CONFIG} (Host ${LABEL})"

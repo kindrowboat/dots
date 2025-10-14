@@ -13,7 +13,9 @@ main() {
 
     DOTS_ROOT=$(git rev-parse --show-toplevel)
 
-    ln -fs $DOTS_ROOT/assets/bin $HOME/.local/bin
+    ln -fs $DOTS_ROOT/assets/bin $HOME/bin
+
+    echo "don't forget to add \"$HOME/bin\" to your path"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

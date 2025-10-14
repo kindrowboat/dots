@@ -19,7 +19,7 @@ fi
 REMOTE_FILENAME="${2:-$(basename "$LOCAL_FILE")}"
 
 # Define the remote directory
-REMOTE_DIR="kindrobot@tilde.town:public_html/s/"
+REMOTE_DIR="kind@tilde.town:public_html/s/"
 
 # Copy the file to the remote directory
 scp "$LOCAL_FILE" "$REMOTE_DIR$REMOTE_FILENAME"
@@ -28,7 +28,7 @@ scp "$LOCAL_FILE" "$REMOTE_DIR$REMOTE_FILENAME"
 if [ $? -eq 0 ]; then
     echo "File successfully copied."
     # Generate the URL
-    URL="https://tilde.town/~kindrobot/s/$REMOTE_FILENAME"
+    URL="https://tilde.town/~kind/s/$REMOTE_FILENAME"
     echo "URL: $URL"
     
     # Try to copy the URL to the clipboard using xsel

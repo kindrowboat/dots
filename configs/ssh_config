@@ -45,7 +45,7 @@ Host gitlab.wikimedia.org
     IdentityFile ~/.ssh/wmf_gitlab_ed25519.key.pub
 
 Host tilde.town
-    Hostname tilde.town
+    HostName tilde.town
     User kind
     #IdentityFile ~/.ssh/id_ed25519
     IdentityFile ~/.ssh/town_ed25519.key.pub
@@ -53,7 +53,7 @@ Host tilde.town
     AddressFamily inet
 
 Host team
-    Hostname tilde.team
+    HostName tilde.team
     User kindrobot
     ForwardAgent yes
     IdentityFile ~/.ssh/id_ed25519
@@ -62,13 +62,13 @@ Host github.com
     IdentityFile ~/.ssh/github_ed25519.key.pub
 
 Host lesbians.kindrobot.ca
-    Hostname lesbians.kindrobot.ca
+    HostName lesbians.kindrobot.ca
     User kindrobot
     ForwardAgent yes
     IdentityFile ~/.ssh/lesbians_ed25519.key.pub
 
 Host acai
-    Hostname 23.23.30.15
+    HostName 23.23.30.15
     User kindrobot
     ForwardAgent yes
     Port 46822
@@ -92,7 +92,33 @@ Host coop.coloc.systems
 
 Host kindbsd.coloc.systems
         User kind
-        IdentityFile /home/kindrobot/.ssh/kindbsd_ed25519.key.pub
+        IdentityFile ~/.ssh/kindbsd_ed25519.key.pub
         IdentitiesOnly yes
 
+Host git.gay
+    User git
+    IdentityFile ~/.ssh/git_gay_ed25519.key.pub
+    IdentitiesOnly yes
+
+Host blahaj.local
+    User coop
+    IdentityFile ~/.ssh/blahaj_ed25519.key.pub
+    IdentitiesOnly yes
+
+Host casper.local
+    User kind
+    IdentityFile ~/.ssh/casper_ed25519.key.pub
+    IdentitiesOnly yes
+
+# mayfirst app servers (of which we are using none)
+#Host mayfirst
+#    User kindrobot
+#    IdentityFile ~/.ssh/mayfirst_ed25519.key.pub
+#    IdentitiesOnly yes
+
+# added for vscode ssh remote (not otherwise needed)
+Host tape.duct.eqiad1.wikimedia.cloud
+	User kindrobot
+	HostName tape.duct.eqiad1.wikimedia.cloud
+	ForwardAgent yes
 
